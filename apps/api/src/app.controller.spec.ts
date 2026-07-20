@@ -23,11 +23,13 @@ describe('AppController', () => {
 
   describe('health', () => {
     it('returns service health', () => {
-      expect(appController.getHealth()).toEqual({
+      const health = appController.getHealth();
+
+      expect(health).toMatchObject({
         status: 'ok',
         service: 'pulsedock-api',
-        timestamp: expect.any(String),
       });
+      expect(typeof health.timestamp).toBe('string');
     });
   });
 });

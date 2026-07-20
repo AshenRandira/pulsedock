@@ -21,6 +21,12 @@ Install dependencies:
 npm install
 ```
 
+Create a local environment file:
+
+```bash
+cp .env.example .env
+```
+
 Start PostgreSQL:
 
 ```bash
@@ -43,6 +49,18 @@ Run API end-to-end tests:
 
 ```bash
 npm run test:e2e:api
+```
+
+Generate Prisma Client:
+
+```bash
+npm run prisma:generate:api
+```
+
+Run Prisma migrations:
+
+```bash
+npm run prisma:migrate:api
 ```
 
 ## Roadmap

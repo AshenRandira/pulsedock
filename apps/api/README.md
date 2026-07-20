@@ -10,6 +10,12 @@ The API owns the monitoring logic, database access, scheduled health checks, inc
 npm install
 ```
 
+From the repository root, create a local environment file:
+
+```bash
+cp .env.example .env
+```
+
 ## Run
 
 ```bash
@@ -24,6 +30,22 @@ npm run start:prod
 ```
 
 By default, the API listens on port `4000`.
+
+## Prisma
+
+From the repository root:
+
+```bash
+npm run prisma:generate:api
+npm run prisma:migrate:api
+```
+
+From `apps/api`:
+
+```bash
+npm run prisma:generate
+npm run prisma:migrate
+```
 
 ## Endpoints
 
