@@ -3,7 +3,7 @@ import { Controller, Get } from '@nestjs/common';
 @Controller()
 export class AppController {
   @Get()
-  getRoot() {
+  getRoot(): { app: string; status: string } {
     return {
       app: 'PulseDock API',
       status: 'running',
@@ -11,7 +11,7 @@ export class AppController {
   }
 
   @Get('health')
-  getHealth() {
+  getHealth(): { status: string; service: string; timestamp: string } {
     return {
       status: 'ok',
       service: 'pulsedock-api',

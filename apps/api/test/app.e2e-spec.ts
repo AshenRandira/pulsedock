@@ -20,7 +20,23 @@ describe('AppController (e2e)', () => {
     return request(app.getHttpServer())
       .get('/')
       .expect(200)
-      .expect('Hello World!');
+      .expect({
+        app: 'PulseDock API',
+        status: 'running',
+      });
+  });
+
+  it('/health (GET)', () => {
+    return request(app.getHttpServer())
+      .get('/health')
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body).toEqual({
+          status: 'ok',
+          service: 'pulsedock-api',
+          timestamp: expect.any(String),
+        });
+      });
   });
 
   afterEach(async () => {
