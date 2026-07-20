@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: pulsedock-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: pulsedock
+      POSTGRES_PASSWORD: pulsedock
+      POSTGRES_DB: pulsedock
+    ports:
+      - "5432:5432"
+    volumes:
+      - pulsedock_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  pulsedock_postgres_data:

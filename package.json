@@ -1,0 +1,28 @@
+{
+  "name": "pulsedock",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Docker-first self-hosted uptime monitoring platform.",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:api": "npm run start:dev -w apps/api",
+    "dev:web": "npm run dev -w apps/web",
+    "build:api": "npm run build -w apps/api",
+    "build:web": "npm run build -w apps/web"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AshenRandira/pulsedock.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/AshenRandira/pulsedock/issues"
+  },
+  "homepage": "https://github.com/AshenRandira/pulsedock#readme"
+}
