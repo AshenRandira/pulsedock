@@ -4,6 +4,11 @@ jest.mock('../prisma/prisma.service', () => ({
   PrismaService: class PrismaService {},
 }));
 
+jest.mock('../mail/mail.service', () => ({
+  MailService: class MailService {},
+}));
+
+import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { HealthChecksService } from './health-checks.service';
 
@@ -31,7 +36,14 @@ describe('HealthChecksService', () => {
       updateMany: jest.fn(),
     },
   };
-  const service = new HealthChecksService(prisma as unknown as PrismaService);
+  const mailService = {
+    sendIncidentOpened: jest.fn(),
+    sendIncidentResolved: jest.fn(),
+  };
+  const service = new HealthChecksService(
+    prisma as unknown as PrismaService,
+    mailService as unknown as MailService,
+  );
   const originalFetch = global.fetch;
   const fetchMock = jest.fn();
 
@@ -52,6 +64,7 @@ describe('HealthChecksService', () => {
     );
     prisma.monitor.findUnique.mockResolvedValue({
       id: 'monitor-1',
+      name: 'PulseDock API',
       url: 'https://api.example.com/health',
       expectedStatusCode: 200,
       currentStatus: 'UNKNOWN',
@@ -185,6 +198,7 @@ describe('HealthChecksService', () => {
   it('opens one incident after a second consecutive failure', async () => {
     prisma.monitor.findUnique.mockResolvedValue({
       id: 'monitor-1',
+      name: 'PulseDock API',
       url: 'https://api.example.com/health',
       expectedStatusCode: 200,
       currentStatus: 'UP',
@@ -207,11 +221,18 @@ describe('HealthChecksService', () => {
     expect(incidentCreateArgs.data.reason).toBe(
       'Expected status 200, received 503',
     );
+    expect(mailService.sendIncidentOpened).toHaveBeenCalledWith(
+      expect.objectContaining({
+        monitorName: 'PulseDock API',
+        reason: 'Expected status 200, received 503',
+      }),
+    );
   });
 
   it('does not create duplicate incidents while a monitor stays down', async () => {
     prisma.monitor.findUnique.mockResolvedValue({
       id: 'monitor-1',
+      name: 'PulseDock API',
       url: 'https://api.example.com/health',
       expectedStatusCode: 200,
       currentStatus: 'DOWN',
@@ -227,11 +248,13 @@ describe('HealthChecksService', () => {
     const monitorUpdate = getLatestMonitorUpdate();
     expect(monitorUpdate.data.currentStatus).toBe('DOWN');
     expect(monitorUpdate.data.consecutiveFailures).toBe(3);
+    expect(mailService.sendIncidentOpened).not.toHaveBeenCalled();
   });
 
   it('resolves an open incident after recovery', async () => {
     prisma.monitor.findUnique.mockResolvedValue({
       id: 'monitor-1',
+      name: 'PulseDock API',
       url: 'https://api.example.com/health',
       expectedStatusCode: 200,
       currentStatus: 'DOWN',
@@ -262,6 +285,9 @@ describe('HealthChecksService', () => {
     });
     expect(incidentUpdateArgs.data.status).toBe('RESOLVED');
     expect(incidentUpdateArgs.data.resolvedAt).toBeInstanceOf(Date);
+    expect(mailService.sendIncidentResolved).toHaveBeenCalledWith(
+      expect.objectContaining({ monitorName: 'PulseDock API' }),
+    );
   });
 
   it('reports a missing monitor', async () => {

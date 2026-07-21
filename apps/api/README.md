@@ -70,6 +70,10 @@ The scheduler runs every minute and checks active monitors whose `nextCheckAt`
 time has passed. After a check, it advances that monitor by its configured
 interval.
 
+To enable incident emails, configure `ALERT_EMAIL`, `SMTP_HOST`, and
+`SMTP_FROM_EMAIL`, along with any required SMTP credentials, in your local
+`.env` file. Email send failures are logged and do not interrupt health checks.
+
 ## Tests
 
 From `apps/api`:
@@ -88,4 +92,4 @@ npm run test:e2e:api
 
 ## Next Backend Milestones
 
-- Email alerts.
+- Dashboard and status APIs.

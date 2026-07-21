@@ -1,11 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
 
 const healthCheckTimeoutMs = 10_000;
 
 @Injectable()
 export class HealthChecksService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mailService: MailService,
+  ) {}
 
   async checkMonitor(id: string) {
     const monitor = await this.prisma.monitor.findUnique({ where: { id } });
@@ -34,7 +38,9 @@ export class HealthChecksService {
       errorMessage = this.getErrorMessage(error);
     }
 
-    return this.prisma.$transaction(async (transaction) => {
+    const outcome = await this.prisma.$transaction(async (transaction) => {
+      let incidentOpened = false;
+      let incidentResolved = false;
       const checkResult = await transaction.checkResult.create({
         data: {
           monitorId: monitor.id,
@@ -57,13 +63,14 @@ export class HealthChecksService {
         });
 
         if (monitor.currentStatus === 'DOWN') {
-          await transaction.incident.updateMany({
+          const resolution = await transaction.incident.updateMany({
             where: { monitorId: monitor.id, status: 'OPEN' },
             data: { status: 'RESOLVED', resolvedAt: checkedAt },
           });
+          incidentResolved = resolution.count > 0;
         }
 
-        return checkResult;
+        return { checkResult, incidentOpened, incidentResolved };
       }
 
       const consecutiveFailures = monitor.consecutiveFailures + 1;
@@ -88,11 +95,31 @@ export class HealthChecksService {
               startedAt: checkedAt,
             },
           });
+          incidentOpened = true;
         }
       }
 
-      return checkResult;
+      return { checkResult, incidentOpened, incidentResolved };
     });
+
+    if (outcome.incidentOpened) {
+      await this.mailService.sendIncidentOpened({
+        monitorName: monitor.name,
+        monitorUrl: monitor.url,
+        occurredAt: checkedAt,
+        reason: errorMessage,
+      });
+    }
+
+    if (outcome.incidentResolved) {
+      await this.mailService.sendIncidentResolved({
+        monitorName: monitor.name,
+        monitorUrl: monitor.url,
+        occurredAt: checkedAt,
+      });
+    }
+
+    return outcome.checkResult;
   }
 
   private getErrorMessage(error: unknown): string {
