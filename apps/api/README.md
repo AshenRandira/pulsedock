@@ -62,7 +62,9 @@ POST   /monitors/:id/check Run a health check
 
 Monitor URLs must use HTTP or HTTPS. `intervalMinutes` accepts values from 1 to
 1440, and `expectedStatusCode` accepts values from 100 to 599. Deleting a
-monitor disables it; its monitoring history remains available.
+monitor disables it; its monitoring history remains available. Each manual
+health check records a result. Two consecutive failures open one incident, and
+the next successful check resolves it.
 
 ## Tests
 
@@ -82,6 +84,5 @@ npm run test:e2e:api
 
 ## Next Backend Milestones
 
-- Incident detection and recovery.
 - Scheduler.
 - Email alerts.

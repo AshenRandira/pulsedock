@@ -34,23 +34,65 @@ export class HealthChecksService {
       errorMessage = this.getErrorMessage(error);
     }
 
-    const checkResult = await this.prisma.checkResult.create({
-      data: {
-        monitorId: monitor.id,
-        statusCode,
-        responseTimeMs: Date.now() - startedAt,
-        success,
-        errorMessage,
-        checkedAt,
-      },
-    });
+    return this.prisma.$transaction(async (transaction) => {
+      const checkResult = await transaction.checkResult.create({
+        data: {
+          monitorId: monitor.id,
+          statusCode,
+          responseTimeMs: Date.now() - startedAt,
+          success,
+          errorMessage,
+          checkedAt,
+        },
+      });
 
-    await this.prisma.monitor.update({
-      where: { id: monitor.id },
-      data: { lastCheckedAt: checkedAt },
-    });
+      if (success) {
+        await transaction.monitor.update({
+          where: { id: monitor.id },
+          data: {
+            currentStatus: 'UP',
+            consecutiveFailures: 0,
+            lastCheckedAt: checkedAt,
+          },
+        });
 
-    return checkResult;
+        if (monitor.currentStatus === 'DOWN') {
+          await transaction.incident.updateMany({
+            where: { monitorId: monitor.id, status: 'OPEN' },
+            data: { status: 'RESOLVED', resolvedAt: checkedAt },
+          });
+        }
+
+        return checkResult;
+      }
+
+      const consecutiveFailures = monitor.consecutiveFailures + 1;
+      const currentStatus =
+        consecutiveFailures >= 2 ? 'DOWN' : monitor.currentStatus;
+
+      await transaction.monitor.update({
+        where: { id: monitor.id },
+        data: { currentStatus, consecutiveFailures, lastCheckedAt: checkedAt },
+      });
+
+      if (currentStatus === 'DOWN') {
+        const openIncident = await transaction.incident.findFirst({
+          where: { monitorId: monitor.id, status: 'OPEN' },
+        });
+
+        if (!openIncident) {
+          await transaction.incident.create({
+            data: {
+              monitorId: monitor.id,
+              reason: errorMessage ?? 'Health check failed',
+              startedAt: checkedAt,
+            },
+          });
+        }
+      }
+
+      return checkResult;
+    });
   }
 
   private getErrorMessage(error: unknown): string {
