@@ -2,16 +2,18 @@
 
 PulseDock is a Docker-first, self-hosted uptime monitoring platform for websites and APIs.
 
-Version 1 is focused on a single self-hosted installation that can run with Docker Compose. The backend is being built first with NestJS, PostgreSQL, and Prisma. The Next.js frontend will be added after the backend monitoring workflow is stable.
+Version 1 is focused on a single self-hosted installation that can run with Docker Compose. It includes a NestJS API, PostgreSQL and Prisma persistence, and a Next.js operations console.
 
 ## Current Status
 
 - Monorepo workspace initialized.
 - NestJS API exists in `apps/api`.
+- Next.js web console exists in `apps/web`.
 - API runs on port `4000`.
 - `GET /` returns basic API status.
 - `GET /health` returns service health.
 - PostgreSQL is defined in `docker-compose.yml`.
+- The web console provides dashboard, monitor, incident, settings, and public status views.
 
 ## Development
 
@@ -38,6 +40,16 @@ Start the API:
 ```bash
 npm run dev:api
 ```
+
+Start the web app in a second terminal:
+
+```bash
+npm run dev:web
+```
+
+The web app runs on `http://localhost:3000` and expects the API at
+`http://localhost:4000` by default. Set `NEXT_PUBLIC_API_URL` to use another
+API address.
 
 Run API tests:
 

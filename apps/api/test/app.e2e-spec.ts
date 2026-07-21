@@ -15,6 +15,7 @@ import { DashboardService } from './../src/dashboard/dashboard.service';
 import { HealthChecksService } from './../src/health-checks/health-checks.service';
 import { MonitorsService } from './../src/monitors/monitors.service';
 import { PrismaService } from './../src/prisma/prisma.service';
+import { SettingsService } from './../src/settings/settings.service';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
@@ -35,6 +36,10 @@ describe('AppController (e2e)', () => {
     getIncidents: jest.fn(),
     getPublicStatus: jest.fn(),
   };
+  const settingsService = {
+    getSettings: jest.fn(),
+    updateSettings: jest.fn(),
+  };
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -53,6 +58,8 @@ describe('AppController (e2e)', () => {
       .useValue(healthChecksService)
       .overrideProvider(DashboardService)
       .useValue(dashboardService)
+      .overrideProvider(SettingsService)
+      .useValue(settingsService)
       .compile();
 
     app = moduleFixture.createNestApplication();
@@ -256,6 +263,25 @@ describe('AppController (e2e)', () => {
       monitors: [],
       incidents: [],
     });
+  });
+
+  it('/settings (PATCH) saves public status metadata', () => {
+    settingsService.updateSettings.mockResolvedValue({
+      statusPageTitle: 'Production status',
+      statusPageDescription: 'Current service availability',
+    });
+
+    return request(app.getHttpServer())
+      .patch('/settings')
+      .send({
+        statusPageTitle: 'Production status',
+        statusPageDescription: 'Current service availability',
+      })
+      .expect(200)
+      .expect({
+        statusPageTitle: 'Production status',
+        statusPageDescription: 'Current service availability',
+      });
   });
 
   afterEach(async () => {

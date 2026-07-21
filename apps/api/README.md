@@ -63,6 +63,8 @@ GET    /monitors/:id/incidents Get monitor incident history
 GET    /dashboard/summary Dashboard summary
 GET    /incidents        List incidents
 GET    /status           Public status data
+GET    /settings         Read public status page settings
+PATCH  /settings         Update public status page settings
 ```
 
 Monitor URLs must use HTTP or HTTPS. `intervalMinutes` accepts values from 1 to
@@ -98,6 +100,8 @@ npm run test:api
 npm run test:e2e:api
 ```
 
-## Next Backend Milestones
+## Frontend
 
-- Next.js frontend integration.
+The Next.js operations console in `apps/web` consumes these endpoints. By
+default it runs at `http://localhost:3000`; configure `WEB_ORIGIN` when it is
+served from a different address.

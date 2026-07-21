@@ -1,0 +1,15 @@
+'use client';
+import { useEffect, useState } from 'react';
+import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { AppShell } from '../../components/app-shell';
+import { api } from '../../lib/api';
+
+type Summary = { monitors: { total: number; up: number; down: number; unknown: number }; activeIncidents: number; averageResponseTimeMs: number | null; recentChecks: Array<{ id: string; success: boolean; responseTimeMs: number | null; checkedAt: string; monitor: { name: string } }> };
+
+export default function DashboardPage() {
+  const [summary, setSummary] = useState<Summary>(); const [error, setError] = useState('');
+  useEffect(() => { api<Summary>('/dashboard/summary').then(setSummary).catch(() => setError('PulseDock API is unavailable. Start the API to see live monitoring data.')); }, []);
+  const data = summary ? [{ name: 'Up', value: summary.monitors.up }, { name: 'Down', value: summary.monitors.down }, { name: 'Unknown', value: summary.monitors.unknown }] : [];
+  return <AppShell title="Operations dashboard"><div className="page"><div className="page-title"><div><h2>System overview</h2><p>Current monitor health, incidents, and recent check activity.</p></div></div>{error && <div className="notice">{error}</div>}<div className="metric-grid"><Metric label="All monitors" value={summary?.monitors.total ?? '—'} /><Metric label="Up" value={summary?.monitors.up ?? '—'} tone="up" /><Metric label="Down" value={summary?.monitors.down ?? '—'} tone="down" /><Metric label="Active incidents" value={summary?.activeIncidents ?? '—'} tone={summary?.activeIncidents ? 'down' : 'up'} /></div><div className="two-col"><section className="surface"><div className="surface-head"><h3>Monitor state</h3><span className="connection">{summary?.averageResponseTimeMs ?? '—'} ms average</span></div><div className="chart">{data.length ? <ResponsiveContainer width="100%" height="100%"><BarChart data={data}><XAxis dataKey="name" /><YAxis allowDecimals={false} /><Tooltip /><Bar dataKey="value" fill="#0a6a6f" radius={[4,4,0,0]} /></BarChart></ResponsiveContainer> : <div className="empty">Waiting for monitor data.</div>}</div></section><section className="surface"><div className="surface-head"><h3>Recent checks</h3></div><div className="table-wrap"><table><thead><tr><th>Monitor</th><th>Result</th><th>Response</th></tr></thead><tbody>{summary?.recentChecks.length ? summary.recentChecks.map(check => <tr key={check.id}><td>{check.monitor.name}</td><td><span className={`badge ${check.success ? 'up' : 'down'}`}>{check.success ? 'UP' : 'DOWN'}</span></td><td>{check.responseTimeMs ?? '—'} ms</td></tr>) : <tr><td colSpan={3} className="empty">No checks recorded yet.</td></tr>}</tbody></table></div></section></div></div></AppShell>;
+}
+function Metric({ label, value, tone }: { label: string; value: string | number; tone?: string }) { return <section className={`metric ${tone ?? ''}`}><div className="label">{label}</div><div className="value">{value}</div></section>; }

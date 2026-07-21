@@ -6,6 +6,7 @@ import { HealthChecksModule } from './health-checks/health-checks.module';
 import { MonitorsModule } from './monitors/monitors.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { MonitorSchedulerModule } from './scheduler/monitor-scheduler.module';
+import { SettingsModule } from './settings/settings.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { MonitorSchedulerModule } from './scheduler/monitor-scheduler.module';
     HealthChecksModule,
     MonitorsModule,
     MonitorSchedulerModule,
+    SettingsModule,
   ],
   controllers: [AppController],
   providers: [],
