@@ -50,9 +50,18 @@ npm run prisma:migrate
 ## Endpoints
 
 ```text
-GET /        API status
-GET /health  Service health
+GET    /             API status
+GET    /health       Service health
+POST   /monitors     Create a monitor
+GET    /monitors     List monitors
+GET    /monitors/:id Get one monitor
+PATCH  /monitors/:id Update a monitor
+DELETE /monitors/:id Disable a monitor
 ```
+
+Monitor URLs must use HTTP or HTTPS. `intervalMinutes` accepts values from 1 to
+1440, and `expectedStatusCode` accepts values from 100 to 599. Deleting a
+monitor disables it; its monitoring history remains available.
 
 ## Tests
 
@@ -72,9 +81,6 @@ npm run test:e2e:api
 
 ## Next Backend Milestones
 
-- Prisma and PostgreSQL connection.
-- Core database models.
-- Monitor CRUD API.
 - Manual health checks.
 - Incident detection.
 - Scheduler.
