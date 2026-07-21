@@ -21,6 +21,7 @@ describe('DashboardService', () => {
     checkResult: {
       aggregate: jest.fn(),
       findMany: jest.fn(),
+      groupBy: jest.fn(),
     },
     appSetting: {
       findFirst: jest.fn(),
@@ -30,6 +31,7 @@ describe('DashboardService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    prisma.checkResult.groupBy.mockResolvedValue([]);
   });
 
   it('returns dashboard counts, average response time, and recent checks', async () => {
@@ -88,12 +90,18 @@ describe('DashboardService', () => {
       { id: 'monitor-1', currentStatus: 'UP' },
     ]);
     prisma.incident.findMany.mockResolvedValue([]);
+    prisma.checkResult.groupBy.mockResolvedValue([
+      { monitorId: 'monitor-1', success: true, _count: { _all: 99 } },
+      { monitorId: 'monitor-1', success: false, _count: { _all: 1 } },
+    ]);
 
     await expect(service.getPublicStatus()).resolves.toEqual({
       title: 'PulseDock Production',
       description: 'Current service availability',
       status: 'operational',
-      monitors: [{ id: 'monitor-1', currentStatus: 'UP' }],
+      monitors: [
+        { id: 'monitor-1', currentStatus: 'UP', uptimePercentage: 99 },
+      ],
       incidents: [],
     });
 
@@ -110,6 +118,12 @@ describe('DashboardService', () => {
       status: 'OPEN',
       monitor: { isPublic: true },
     });
+    expect(prisma.checkResult.groupBy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        by: ['monitorId', 'success'],
+        _count: { _all: true },
+      }),
+    );
   });
 
   it('marks public status as degraded when a public monitor is down', async () => {

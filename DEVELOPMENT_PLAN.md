@@ -6,18 +6,18 @@ This plan keeps development backend-first. Each phase should happen on its own b
 
 ## Current Status
 
-- GitHub repository exists.
-- Monorepo structure exists.
-- Root `package.json` exists.
-- NestJS API app exists at `apps/api`.
-- API listens on port `4000`.
-- Basic `/health` endpoint exists.
-- PostgreSQL service exists in `docker-compose.yml`.
-- Prisma is not set up yet.
-- No monitor, incident, alert, scheduler, or frontend features are implemented yet.
+- Phases 1 through 10 are implemented: NestJS, PostgreSQL/Prisma, monitor CRUD,
+  checks, incidents, scheduler, alert-provider architecture, dashboard/status
+  APIs, and the Next.js web console.
+- API endpoints include `GET /status`, `GET /monitors/:id/check-results`, and
+  `GET /monitors/:id/incidents`.
+- Local CORS supports `http://localhost:3000` and `http://localhost:3100`.
+- Docker deployment is postponed and remains Phase 11.
+- Version 1 intentionally has no built-in authentication or SaaS features.
 
 ## Development Rules
 
+- Keep Docker deployment postponed until the current stabilization work is complete.
 - Build the backend first.
 - Keep monitoring logic in the backend.
 - Keep the frontend as a display and control layer only.
@@ -568,7 +568,7 @@ Tasks:
 - Add incident history.
 - Build incident list page.
 - Build public status page.
-- Build settings page for SMTP and status page settings.
+- Build settings page for public status-page settings; keep SMTP configuration in environment variables.
 
 Definition of done:
 
@@ -639,16 +639,5 @@ git commit -m "chore: add docker compose deployment"
 
 ## Immediate Next Step
 
-Start with the foundation branch if current starter code and docs need cleanup:
-
-```bash
-git checkout -b chore/project-foundation
-```
-
-If the foundation is accepted as already good enough, start with Prisma:
-
-```bash
-git checkout -b chore/setup-prisma-postgres
-```
-
-The strongest next technical milestone is Prisma and PostgreSQL setup, because all later backend work depends on persistent data.
+Complete the focused pre-Docker stabilization work, then revisit Phase 11 when
+Docker deployment is no longer postponed.

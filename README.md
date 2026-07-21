@@ -1,8 +1,8 @@
 # PulseDock
 
-PulseDock is a Docker-first, self-hosted uptime monitoring platform for websites and APIs.
+PulseDock is a self-hosted uptime monitoring platform for websites and APIs.
 
-Version 1 is focused on a single self-hosted installation that can run with Docker Compose. It includes a NestJS API, PostgreSQL and Prisma persistence, and a Next.js operations console.
+Version 1 is focused on a single self-hosted installation. It includes a NestJS API, PostgreSQL and Prisma persistence, and a Next.js operations console. Docker deployment is postponed and remains Phase 11.
 
 ## Current Status
 
@@ -14,6 +14,14 @@ Version 1 is focused on a single self-hosted installation that can run with Dock
 - `GET /health` returns service health.
 - PostgreSQL is defined in `docker-compose.yml`.
 - The web console provides dashboard, monitor, incident, settings, and public status views.
+- Scheduled checks create incidents after two consecutive failures and resolve them on recovery.
+- Public status includes a simple 30-day uptime percentage when check history exists.
+
+## Security Warning
+
+PulseDock Version 1 does not include built-in authentication. Do not expose it
+publicly without reverse proxy auth, VPN, firewall rules, or private network
+protection.
 
 ## Development
 
@@ -47,9 +55,18 @@ Start the web app in a second terminal:
 npm run dev:web
 ```
 
-The web app runs on `http://localhost:3000` and expects the API at
-`http://localhost:4000` by default. Set `NEXT_PUBLIC_API_URL` to use another
+`API_PORT` is the preferred API port setting. `PORT` remains supported as a
+fallback, and the API defaults to `4000`. The web app runs on
+`http://localhost:3000` by default and expects the API at `http://localhost:4000`.
+On machines where port `3000` is unavailable, use port `3100`; the default
+`WEB_ORIGIN` allows both local origins. Set `NEXT_PUBLIC_API_URL` to use another
 API address.
+
+SMTP is configured only through environment variables. The Settings page manages
+public status-page metadata only and never exposes SMTP credentials. Set
+`ALERT_PROVIDER=none` to disable alerts; when it is `smtp`, configure the SMTP
+variables in `.env`. Check history is retained for 30 days by default; set
+`CHECK_HISTORY_RETENTION_DAYS` to change that value.
 
 Run API tests:
 

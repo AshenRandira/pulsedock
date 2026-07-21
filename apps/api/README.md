@@ -29,7 +29,7 @@ npm run start:dev
 npm run start:prod
 ```
 
-By default, the API listens on port `4000`.
+The API uses `API_PORT` first, `PORT` as a fallback, and `4000` by default.
 
 ## Prisma
 
@@ -77,12 +77,24 @@ The scheduler runs every minute and checks active monitors whose `nextCheckAt`
 time has passed. After a check, it advances that monitor by its configured
 interval.
 
-To enable incident emails, configure `ALERT_EMAIL`, `SMTP_HOST`, and
-`SMTP_FROM_EMAIL`, along with any required SMTP credentials, in your local
-`.env` file. Set `ALERT_PROVIDER=none` to disable alerts while SMTP is being
-finalized. Email send failures are logged and do not interrupt health checks.
+The settings endpoints manage public status-page metadata only. SMTP credentials
+are configured through environment variables and are never returned by the API.
+To enable incident emails, set `ALERT_PROVIDER=smtp` and configure
+`ALERT_EMAIL`, `SMTP_HOST`, and `SMTP_FROM_EMAIL`, along with any required SMTP
+credentials, in `.env`. Set `ALERT_PROVIDER=none` to disable alerts cleanly.
+Missing SMTP configuration and send failures are logged without interrupting
+health checks. PulseDock does not send test emails automatically.
 
 History and incident list endpoints accept an optional `limit` from 1 to 100.
+Public monitor responses include `uptimePercentage`, calculated from check
+results within the last 30 days when history exists. A daily cleanup removes
+check results older than `CHECK_HISTORY_RETENTION_DAYS`, which defaults to 30.
+
+## Security Warning
+
+PulseDock Version 1 does not include built-in authentication. Do not expose it
+publicly without reverse proxy auth, VPN, firewall rules, or private network
+protection.
 
 ## Tests
 
@@ -103,5 +115,5 @@ npm run test:e2e:api
 ## Frontend
 
 The Next.js operations console in `apps/web` consumes these endpoints. By
-default it runs at `http://localhost:3000`; configure `WEB_ORIGIN` when it is
-served from a different address.
+default it runs at `http://localhost:3000`; the default `WEB_ORIGIN` also allows
+`http://localhost:3100` for local development.

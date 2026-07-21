@@ -27,6 +27,7 @@ export class AlertsService {
   }
 
   private getProvider(): AlertProvider {
+    // SMTP credentials remain environment-only and are never read from AppSetting.
     const provider = this.configService
       .get<string>('ALERT_PROVIDER')
       ?.toLowerCase();

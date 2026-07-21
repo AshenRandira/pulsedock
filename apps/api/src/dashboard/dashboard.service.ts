@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 
 const defaultHistoryLimit = 30;
 const defaultIncidentLimit = 50;
+const publicStatusUptimeWindowDays = 30;
 
 @Injectable()
 export class DashboardService {
@@ -110,7 +111,48 @@ export class DashboardService {
         },
       }),
     ]);
-    const hasDownMonitor = monitors.some(
+    const checkGroups = monitors.length
+      ? await this.prisma.checkResult.groupBy({
+          by: ['monitorId', 'success'],
+          where: {
+            monitorId: { in: monitors.map((monitor) => monitor.id) },
+            checkedAt: {
+              gte: new Date(
+                Date.now() - publicStatusUptimeWindowDays * 24 * 60 * 60_000,
+              ),
+            },
+          },
+          _count: { _all: true },
+        })
+      : [];
+    const uptimeByMonitor = new Map<
+      string,
+      { successful: number; total: number }
+    >();
+
+    for (const checkGroup of checkGroups) {
+      const uptime = uptimeByMonitor.get(checkGroup.monitorId) ?? {
+        successful: 0,
+        total: 0,
+      };
+      uptime.total += checkGroup._count._all;
+      if (checkGroup.success) {
+        uptime.successful += checkGroup._count._all;
+      }
+      uptimeByMonitor.set(checkGroup.monitorId, uptime);
+    }
+    const monitorsWithUptime = monitors.map((monitor) => {
+      const uptime = uptimeByMonitor.get(monitor.id);
+
+      return {
+        ...monitor,
+        uptimePercentage:
+          uptime && uptime.total > 0
+            ? Math.round((uptime.successful / uptime.total) * 10_000) / 100
+            : null,
+      };
+    });
+    const hasDownMonitor = monitorsWithUptime.some(
       (monitor) => monitor.currentStatus === 'DOWN',
     );
 
@@ -119,7 +161,7 @@ export class DashboardService {
       description: settings?.statusPageDescription ?? null,
       status:
         hasDownMonitor || incidents.length > 0 ? 'degraded' : 'operational',
-      monitors,
+      monitors: monitorsWithUptime,
       incidents,
     };
   }
