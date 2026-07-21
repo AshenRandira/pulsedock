@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { MailModule } from '../mail/mail.module';
+import { AlertsModule } from '../alerts/alerts.module';
 import { HealthChecksController } from './health-checks.controller';
 import { HealthChecksService } from './health-checks.service';
 
 @Module({
-  imports: [MailModule],
+  imports: [AlertsModule],
   controllers: [HealthChecksController],
   providers: [HealthChecksService],
   exports: [HealthChecksService],

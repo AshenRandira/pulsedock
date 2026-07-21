@@ -1,13 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
-
-type IncidentAlert = {
-  monitorName: string;
-  monitorUrl: string;
-  occurredAt: Date;
-  reason?: string;
-};
+import { AlertProvider } from '../alerts/alert-provider';
+import { IncidentAlert } from '../alerts/incident-alert';
 
 type MailConfiguration = {
   alertEmail: string;
@@ -20,7 +15,7 @@ type MailConfiguration = {
 };
 
 @Injectable()
-export class MailService {
+export class MailService implements AlertProvider {
   private readonly logger = new Logger(MailService.name);
 
   constructor(private readonly configService: ConfigService) {}

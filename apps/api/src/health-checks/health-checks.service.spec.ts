@@ -4,11 +4,11 @@ jest.mock('../prisma/prisma.service', () => ({
   PrismaService: class PrismaService {},
 }));
 
-jest.mock('../mail/mail.service', () => ({
-  MailService: class MailService {},
+jest.mock('../alerts/alerts.service', () => ({
+  AlertsService: class AlertsService {},
 }));
 
-import { MailService } from '../mail/mail.service';
+import { AlertsService } from '../alerts/alerts.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { HealthChecksService } from './health-checks.service';
 
@@ -36,13 +36,13 @@ describe('HealthChecksService', () => {
       updateMany: jest.fn(),
     },
   };
-  const mailService = {
+  const alertsService = {
     sendIncidentOpened: jest.fn(),
     sendIncidentResolved: jest.fn(),
   };
   const service = new HealthChecksService(
     prisma as unknown as PrismaService,
-    mailService as unknown as MailService,
+    alertsService as unknown as AlertsService,
   );
   const originalFetch = global.fetch;
   const fetchMock = jest.fn();
@@ -221,7 +221,7 @@ describe('HealthChecksService', () => {
     expect(incidentCreateArgs.data.reason).toBe(
       'Expected status 200, received 503',
     );
-    expect(mailService.sendIncidentOpened).toHaveBeenCalledWith(
+    expect(alertsService.sendIncidentOpened).toHaveBeenCalledWith(
       expect.objectContaining({
         monitorName: 'PulseDock API',
         reason: 'Expected status 200, received 503',
@@ -248,7 +248,7 @@ describe('HealthChecksService', () => {
     const monitorUpdate = getLatestMonitorUpdate();
     expect(monitorUpdate.data.currentStatus).toBe('DOWN');
     expect(monitorUpdate.data.consecutiveFailures).toBe(3);
-    expect(mailService.sendIncidentOpened).not.toHaveBeenCalled();
+    expect(alertsService.sendIncidentOpened).not.toHaveBeenCalled();
   });
 
   it('resolves an open incident after recovery', async () => {
@@ -285,7 +285,7 @@ describe('HealthChecksService', () => {
     });
     expect(incidentUpdateArgs.data.status).toBe('RESOLVED');
     expect(incidentUpdateArgs.data.resolvedAt).toBeInstanceOf(Date);
-    expect(mailService.sendIncidentResolved).toHaveBeenCalledWith(
+    expect(alertsService.sendIncidentResolved).toHaveBeenCalledWith(
       expect.objectContaining({ monitorName: 'PulseDock API' }),
     );
   });

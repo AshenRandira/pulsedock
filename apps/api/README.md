@@ -72,7 +72,8 @@ interval.
 
 To enable incident emails, configure `ALERT_EMAIL`, `SMTP_HOST`, and
 `SMTP_FROM_EMAIL`, along with any required SMTP credentials, in your local
-`.env` file. Email send failures are logged and do not interrupt health checks.
+`.env` file. Set `ALERT_PROVIDER=none` to disable alerts while SMTP is being
+finalized. Email send failures are logged and do not interrupt health checks.
 
 ## Tests
 

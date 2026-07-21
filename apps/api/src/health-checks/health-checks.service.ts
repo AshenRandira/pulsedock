@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { MailService } from '../mail/mail.service';
+import { AlertsService } from '../alerts/alerts.service';
 import { PrismaService } from '../prisma/prisma.service';
 
 const healthCheckTimeoutMs = 10_000;
@@ -8,7 +8,7 @@ const healthCheckTimeoutMs = 10_000;
 export class HealthChecksService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly mailService: MailService,
+    private readonly alertsService: AlertsService,
   ) {}
 
   async checkMonitor(id: string) {
@@ -103,7 +103,7 @@ export class HealthChecksService {
     });
 
     if (outcome.incidentOpened) {
-      await this.mailService.sendIncidentOpened({
+      await this.alertsService.sendIncidentOpened({
         monitorName: monitor.name,
         monitorUrl: monitor.url,
         occurredAt: checkedAt,
@@ -112,7 +112,7 @@ export class HealthChecksService {
     }
 
     if (outcome.incidentResolved) {
-      await this.mailService.sendIncidentResolved({
+      await this.alertsService.sendIncidentResolved({
         monitorName: monitor.name,
         monitorUrl: monitor.url,
         occurredAt: checkedAt,
