@@ -66,6 +66,10 @@ monitor disables it; its monitoring history remains available. Each manual
 health check records a result. Two consecutive failures open one incident, and
 the next successful check resolves it.
 
+The scheduler runs every minute and checks active monitors whose `nextCheckAt`
+time has passed. After a check, it advances that monitor by its configured
+interval.
+
 ## Tests
 
 From `apps/api`:
@@ -84,5 +88,4 @@ npm run test:e2e:api
 
 ## Next Backend Milestones
 
-- Scheduler.
 - Email alerts.

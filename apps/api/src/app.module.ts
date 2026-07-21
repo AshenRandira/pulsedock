@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { HealthChecksModule } from './health-checks/health-checks.module';
 import { MonitorsModule } from './monitors/monitors.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { MonitorSchedulerModule } from './scheduler/monitor-scheduler.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { PrismaModule } from './prisma/prisma.module';
     PrismaModule,
     HealthChecksModule,
     MonitorsModule,
+    MonitorSchedulerModule,
   ],
   controllers: [AppController],
   providers: [],
