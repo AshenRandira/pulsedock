@@ -6,3 +6,81 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum MonitorStatus {
+  UP
+  DOWN
+  UNKNOWN
+}
+
+enum IncidentStatus {
+  OPEN
+  RESOLVED
+}
+
+model Monitor {
+  id                  String        @id @default(cuid())
+  name                String
+  url                 String
+  intervalMinutes     Int           @default(5)
+  expectedStatusCode  Int           @default(200)
+  currentStatus       MonitorStatus @default(UNKNOWN)
+  consecutiveFailures Int           @default(0)
+  lastCheckedAt       DateTime?
+  nextCheckAt         DateTime?
+  isActive            Boolean       @default(true)
+  isPublic            Boolean       @default(false)
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  checkResults CheckResult[]
+  incidents    Incident[]
+
+  @@index([isActive, nextCheckAt])
+  @@index([currentStatus])
+}
+
+model CheckResult {
+  id             String   @id @default(cuid())
+  monitorId      String
+  statusCode     Int?
+  responseTimeMs Int?
+  success        Boolean
+  errorMessage   String?
+  checkedAt      DateTime @default(now())
+
+  monitor Monitor @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+
+  @@index([monitorId, checkedAt])
+  @@index([success])
+}
+
+model Incident {
+  id         String         @id @default(cuid())
+  monitorId  String
+  status     IncidentStatus @default(OPEN)
+  reason     String
+  startedAt  DateTime       @default(now())
+  resolvedAt DateTime?
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  monitor Monitor @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+
+  @@index([monitorId, status])
+  @@index([startedAt])
+}
+
+model AppSetting {
+  id                    String   @id @default(cuid())
+  alertEmail            String?
+  smtpHost              String?
+  smtpPort              Int?
+  smtpUser              String?
+  smtpPassword          String?
+  smtpFromEmail         String?
+  statusPageTitle       String   @default("PulseDock Status")
+  statusPageDescription String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
