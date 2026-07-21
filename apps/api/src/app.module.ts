@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
+import { HealthChecksModule } from './health-checks/health-checks.module';
 import { MonitorsModule } from './monitors/monitors.module';
 import { PrismaModule } from './prisma/prisma.module';
 
@@ -11,6 +12,7 @@ import { PrismaModule } from './prisma/prisma.module';
       envFilePath: ['.env', '../../.env'],
     }),
     PrismaModule,
+    HealthChecksModule,
     MonitorsModule,
   ],
   controllers: [AppController],

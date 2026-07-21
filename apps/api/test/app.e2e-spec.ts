@@ -11,6 +11,7 @@ jest.mock('./../src/prisma/prisma.service', () => ({
 }));
 
 import { AppModule } from './../src/app.module';
+import { HealthChecksService } from './../src/health-checks/health-checks.service';
 import { MonitorsService } from './../src/monitors/monitors.service';
 import { PrismaService } from './../src/prisma/prisma.service';
 
@@ -22,6 +23,9 @@ describe('AppController (e2e)', () => {
     findOne: jest.fn(),
     update: jest.fn(),
     remove: jest.fn(),
+  };
+  const healthChecksService = {
+    checkMonitor: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -37,6 +41,8 @@ describe('AppController (e2e)', () => {
       })
       .overrideProvider(MonitorsService)
       .useValue(monitorsService)
+      .overrideProvider(HealthChecksService)
+      .useValue(healthChecksService)
       .compile();
 
     app = moduleFixture.createNestApplication();
@@ -153,6 +159,30 @@ describe('AppController (e2e)', () => {
       .delete('/monitors/monitor-1')
       .expect(200)
       .expect({ id: 'monitor-1', isActive: false });
+  });
+
+  it('/monitors/:id/check (POST) runs a health check', () => {
+    healthChecksService.checkMonitor.mockResolvedValue({
+      id: 'check-1',
+      monitorId: 'monitor-1',
+      success: true,
+      statusCode: 200,
+    });
+
+    return request(app.getHttpServer())
+      .post('/monitors/monitor-1/check')
+      .expect(201)
+      .expect({
+        id: 'check-1',
+        monitorId: 'monitor-1',
+        success: true,
+        statusCode: 200,
+      })
+      .expect(() => {
+        expect(healthChecksService.checkMonitor).toHaveBeenCalledWith(
+          'monitor-1',
+        );
+      });
   });
 
   afterEach(async () => {

@@ -57,6 +57,7 @@ GET    /monitors     List monitors
 GET    /monitors/:id Get one monitor
 PATCH  /monitors/:id Update a monitor
 DELETE /monitors/:id Disable a monitor
+POST   /monitors/:id/check Run a health check
 ```
 
 Monitor URLs must use HTTP or HTTPS. `intervalMinutes` accepts values from 1 to
@@ -81,7 +82,6 @@ npm run test:e2e:api
 
 ## Next Backend Milestones
 
-- Manual health checks.
-- Incident detection.
+- Incident detection and recovery.
 - Scheduler.
 - Email alerts.
