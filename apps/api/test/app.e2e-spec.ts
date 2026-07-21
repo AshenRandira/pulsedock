@@ -11,6 +11,7 @@ jest.mock('./../src/prisma/prisma.service', () => ({
 }));
 
 import { AppModule } from './../src/app.module';
+import { DashboardService } from './../src/dashboard/dashboard.service';
 import { HealthChecksService } from './../src/health-checks/health-checks.service';
 import { MonitorsService } from './../src/monitors/monitors.service';
 import { PrismaService } from './../src/prisma/prisma.service';
@@ -26,6 +27,13 @@ describe('AppController (e2e)', () => {
   };
   const healthChecksService = {
     checkMonitor: jest.fn(),
+  };
+  const dashboardService = {
+    getSummary: jest.fn(),
+    getMonitorCheckResults: jest.fn(),
+    getMonitorIncidents: jest.fn(),
+    getIncidents: jest.fn(),
+    getPublicStatus: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -43,6 +51,8 @@ describe('AppController (e2e)', () => {
       .useValue(monitorsService)
       .overrideProvider(HealthChecksService)
       .useValue(healthChecksService)
+      .overrideProvider(DashboardService)
+      .useValue(dashboardService)
       .compile();
 
     app = moduleFixture.createNestApplication();
@@ -183,6 +193,69 @@ describe('AppController (e2e)', () => {
           'monitor-1',
         );
       });
+  });
+
+  it('/dashboard/summary (GET) returns dashboard data', () => {
+    dashboardService.getSummary.mockResolvedValue({
+      monitors: { total: 1, up: 1, down: 0, unknown: 0 },
+      activeIncidents: 0,
+      averageResponseTimeMs: 120,
+      recentChecks: [],
+    });
+
+    return request(app.getHttpServer())
+      .get('/dashboard/summary')
+      .expect(200)
+      .expect({
+        monitors: { total: 1, up: 1, down: 0, unknown: 0 },
+        activeIncidents: 0,
+        averageResponseTimeMs: 120,
+        recentChecks: [],
+      });
+  });
+
+  it('/monitors/:id/check-results (GET) returns bounded history', () => {
+    dashboardService.getMonitorCheckResults.mockResolvedValue([
+      { id: 'check-1' },
+    ]);
+
+    return request(app.getHttpServer())
+      .get('/monitors/monitor-1/check-results?limit=10')
+      .expect(200)
+      .expect([{ id: 'check-1' }])
+      .expect(() => {
+        expect(dashboardService.getMonitorCheckResults).toHaveBeenCalledWith(
+          'monitor-1',
+          10,
+        );
+      });
+  });
+
+  it('/incidents (GET) rejects an invalid history limit', () => {
+    return request(app.getHttpServer())
+      .get('/incidents?limit=101')
+      .expect(400)
+      .expect(() => {
+        expect(dashboardService.getIncidents).not.toHaveBeenCalled();
+      });
+  });
+
+  it('/status (GET) returns public status data', () => {
+    dashboardService.getPublicStatus.mockResolvedValue({
+      title: 'PulseDock Status',
+      description: null,
+      status: 'operational',
+      monitors: [],
+      incidents: [],
+    });
+
+    return request(app.getHttpServer()).get('/status').expect(200).expect({
+      title: 'PulseDock Status',
+      description: null,
+      status: 'operational',
+      monitors: [],
+      incidents: [],
+    });
   });
 
   afterEach(async () => {

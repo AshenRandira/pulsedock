@@ -58,6 +58,11 @@ GET    /monitors/:id Get one monitor
 PATCH  /monitors/:id Update a monitor
 DELETE /monitors/:id Disable a monitor
 POST   /monitors/:id/check Run a health check
+GET    /monitors/:id/check-results Get monitor check history
+GET    /monitors/:id/incidents Get monitor incident history
+GET    /dashboard/summary Dashboard summary
+GET    /incidents        List incidents
+GET    /status           Public status data
 ```
 
 Monitor URLs must use HTTP or HTTPS. `intervalMinutes` accepts values from 1 to
@@ -74,6 +79,8 @@ To enable incident emails, configure `ALERT_EMAIL`, `SMTP_HOST`, and
 `SMTP_FROM_EMAIL`, along with any required SMTP credentials, in your local
 `.env` file. Set `ALERT_PROVIDER=none` to disable alerts while SMTP is being
 finalized. Email send failures are logged and do not interrupt health checks.
+
+History and incident list endpoints accept an optional `limit` from 1 to 100.
 
 ## Tests
 
@@ -93,4 +100,4 @@ npm run test:e2e:api
 
 ## Next Backend Milestones
 
-- Dashboard and status APIs.
+- Next.js frontend integration.
