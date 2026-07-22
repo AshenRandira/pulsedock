@@ -79,9 +79,10 @@ interval.
 
 The settings endpoints manage public status-page metadata only. SMTP credentials
 are configured through environment variables and are never returned by the API.
-To enable incident emails, set `ALERT_PROVIDER=smtp` and configure
+Alerts are disabled when `ALERT_PROVIDER` is unset or set to `none`. To enable
+incident emails, set `ALERT_PROVIDER=smtp` and configure
 `ALERT_EMAIL`, `SMTP_HOST`, and `SMTP_FROM_EMAIL`, along with any required SMTP
-credentials, in `.env`. Set `ALERT_PROVIDER=none` to disable alerts cleanly.
+credentials, in `.env`.
 Missing SMTP configuration and send failures are logged without interrupting
 health checks. PulseDock does not send test emails automatically.
 

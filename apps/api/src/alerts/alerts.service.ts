@@ -32,12 +32,12 @@ export class AlertsService {
       .get<string>('ALERT_PROVIDER')
       ?.toLowerCase();
 
-    if (!provider || provider === 'smtp') {
-      return this.mailService;
+    if (!provider || provider === 'none') {
+      return noOpAlertProvider;
     }
 
-    if (provider === 'none') {
-      return noOpAlertProvider;
+    if (provider === 'smtp') {
+      return this.mailService;
     }
 
     this.logger.warn(

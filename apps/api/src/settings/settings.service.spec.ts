@@ -33,6 +33,7 @@ describe('SettingsService', () => {
     prisma.appSetting.create.mockResolvedValue({
       statusPageTitle: 'Production status',
       statusPageDescription: 'Current service availability',
+      smtpPassword: 'must-not-leak',
     });
 
     await expect(
@@ -51,9 +52,15 @@ describe('SettingsService', () => {
     prisma.appSetting.update.mockResolvedValue({
       statusPageTitle: 'PulseDock Status',
       statusPageDescription: 'Updated description',
+      smtpPassword: 'must-not-leak',
     });
 
-    await service.updateSettings({
+    await expect(
+      service.updateSettings({
+        statusPageDescription: 'Updated description',
+      }),
+    ).resolves.toEqual({
+      statusPageTitle: 'PulseDock Status',
       statusPageDescription: 'Updated description',
     });
 

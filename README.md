@@ -2,7 +2,7 @@
 
 PulseDock is a self-hosted uptime monitoring platform for websites and APIs.
 
-Version 1 is focused on a single self-hosted installation. It includes a NestJS API, PostgreSQL and Prisma persistence, and a Next.js operations console. Docker deployment is postponed and remains Phase 11.
+Version 1 is focused on a single self-hosted installation. It includes a NestJS API, PostgreSQL and Prisma persistence, and a Next.js operations console. Docker deployment is Phase 11 and is the next development phase.
 
 ## Current Status
 
@@ -17,11 +17,12 @@ Version 1 is focused on a single self-hosted installation. It includes a NestJS 
 - Monitor detail supports editing, manual checks, and reversible enable/disable controls.
 - Scheduled checks create incidents after two consecutive failures and resolve them on recovery.
 - Public status includes a simple 30-day uptime percentage when check history exists.
+- Live monitoring views refresh automatically while their browser tab is visible.
 
 The core Version 1 workflow has been validated locally against PostgreSQL: monitors
 can be created and updated, checks are stored, consecutive failures create one
 incident, and recovery resolves it automatically. SMTP delivery remains optional
-environment configuration, and Docker deployment remains deferred to Phase 11.
+environment configuration. Docker deployment is the remaining Phase 11 work.
 
 ## Security Warning
 
@@ -69,9 +70,9 @@ On machines where port `3000` is unavailable, use port `3100`; the default
 API address.
 
 SMTP is configured only through environment variables. The Settings page manages
-public status-page metadata only and never exposes SMTP credentials. Set
-`ALERT_PROVIDER=none` to disable alerts; when it is `smtp`, configure the SMTP
-variables in `.env`. Check history is retained for 30 days by default; set
+public status-page metadata only and never exposes SMTP credentials. Alerts are
+disabled when `ALERT_PROVIDER` is unset or set to `none`; set it to `smtp` only
+after configuring the SMTP variables in `.env`. Check history is retained for 30 days by default; set
 `CHECK_HISTORY_RETENTION_DAYS` to change that value.
 
 Run API tests:

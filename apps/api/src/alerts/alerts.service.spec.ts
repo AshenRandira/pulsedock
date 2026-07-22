@@ -36,8 +36,16 @@ describe('AlertsService', () => {
     jest.restoreAllMocks();
   });
 
-  it('uses SMTP by default', async () => {
+  it('disables notifications by default', async () => {
     configService.get.mockReturnValue(undefined);
+
+    await service.sendIncidentOpened(alert);
+
+    expect(mailService.sendIncidentOpened).not.toHaveBeenCalled();
+  });
+
+  it('uses SMTP when explicitly configured', async () => {
+    configService.get.mockReturnValue('smtp');
 
     await service.sendIncidentOpened(alert);
 

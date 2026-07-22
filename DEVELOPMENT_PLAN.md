@@ -16,12 +16,15 @@ This plan keeps development backend-first. Each phase should happen on its own b
   enable/disable controls.
 - The complete incident lifecycle has been validated: two consecutive failures
   create an incident and a successful recovery check resolves it.
-- Docker deployment is postponed and remains Phase 11.
+- Live dashboard, monitor, incident, detail, and public status data refreshes
+  automatically while the browser tab is visible.
+- The final non-Docker readiness audit is complete. Docker deployment is next as
+  Phase 11.
 - Version 1 intentionally has no built-in authentication or SaaS features.
 
 ## Development Rules
 
-- Keep Docker deployment postponed until the current stabilization work is complete.
+- Keep Docker deployment work scoped to Phase 11.
 - Build the backend first.
 - Keep monitoring logic in the backend.
 - Keep the frontend as a display and control layer only.
@@ -459,7 +462,7 @@ Definition of done:
 
 - Downtime email sends once per incident.
 - Recovery email sends once per resolved incident.
-- SMTP settings come from environment or app settings.
+- SMTP settings come from environment variables only.
 - Health checks still complete even if email sending fails.
 
 Suggested commit:
@@ -643,7 +646,6 @@ git commit -m "chore: add docker compose deployment"
 
 ## Immediate Next Step
 
-The core Version 1 application and local verification are complete. Keep SMTP
-delivery optional and Docker deployment postponed. When deployment work resumes,
-continue with Phase 11 on `chore/docker-compose` without expanding into SaaS or
-built-in authentication features.
+The core Version 1 application, local verification, and pre-Docker readiness
+work are complete. Continue with Phase 11 on `chore/docker-compose` without
+expanding into SaaS or built-in authentication features.

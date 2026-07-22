@@ -30,18 +30,32 @@ export class SettingsService {
     });
 
     if (settings) {
-      return this.prisma.appSetting.update({
+      const updatedSettings = await this.prisma.appSetting.update({
         where: { id: settings.id },
         data: updateSettingsDto,
       });
+
+      return this.toPublicSettings(updatedSettings);
     }
 
-    return this.prisma.appSetting.create({
+    const createdSettings = await this.prisma.appSetting.create({
       data: {
         statusPageTitle:
           updateSettingsDto.statusPageTitle ?? defaultSettings.statusPageTitle,
         statusPageDescription: updateSettingsDto.statusPageDescription,
       },
     });
+
+    return this.toPublicSettings(createdSettings);
+  }
+
+  private toPublicSettings(settings: {
+    statusPageTitle: string;
+    statusPageDescription: string | null;
+  }) {
+    return {
+      statusPageTitle: settings.statusPageTitle,
+      statusPageDescription: settings.statusPageDescription,
+    };
   }
 }
