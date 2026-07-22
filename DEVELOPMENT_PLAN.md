@@ -12,6 +12,10 @@ This plan keeps development backend-first. Each phase should happen on its own b
 - API endpoints include `GET /status`, `GET /monitors/:id/check-results`, and
   `GET /monitors/:id/incidents`.
 - Local CORS supports `http://localhost:3000` and `http://localhost:3100`.
+- The web console supports monitor creation, editing, manual checks, and reversible
+  enable/disable controls.
+- The complete incident lifecycle has been validated: two consecutive failures
+  create an incident and a successful recovery check resolves it.
 - Docker deployment is postponed and remains Phase 11.
 - Version 1 intentionally has no built-in authentication or SaaS features.
 
@@ -639,5 +643,7 @@ git commit -m "chore: add docker compose deployment"
 
 ## Immediate Next Step
 
-Complete the focused pre-Docker stabilization work, then revisit Phase 11 when
-Docker deployment is no longer postponed.
+The core Version 1 application and local verification are complete. Keep SMTP
+delivery optional and Docker deployment postponed. When deployment work resumes,
+continue with Phase 11 on `chore/docker-compose` without expanding into SaaS or
+built-in authentication features.

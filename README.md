@@ -14,8 +14,14 @@ Version 1 is focused on a single self-hosted installation. It includes a NestJS 
 - `GET /health` returns service health.
 - PostgreSQL is defined in `docker-compose.yml`.
 - The web console provides dashboard, monitor, incident, settings, and public status views.
+- Monitor detail supports editing, manual checks, and reversible enable/disable controls.
 - Scheduled checks create incidents after two consecutive failures and resolve them on recovery.
 - Public status includes a simple 30-day uptime percentage when check history exists.
+
+The core Version 1 workflow has been validated locally against PostgreSQL: monitors
+can be created and updated, checks are stored, consecutive failures create one
+incident, and recovery resolves it automatically. SMTP delivery remains optional
+environment configuration, and Docker deployment remains deferred to Phase 11.
 
 ## Security Warning
 

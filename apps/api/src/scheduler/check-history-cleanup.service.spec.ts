@@ -31,30 +31,40 @@ describe('CheckHistoryCleanupService', () => {
   it('deletes check results older than the configured retention period', async () => {
     configService.get.mockReturnValue('14');
     prisma.checkResult.deleteMany.mockResolvedValue({ count: 3 });
+    const retentionMs = 14 * 24 * 60 * 60_000;
     const startedAt = Date.now();
 
     await service.removeExpiredCheckResults();
+    const finishedAt = Date.now();
 
     const [[query]] = prisma.checkResult.deleteMany.mock.calls as unknown as [
       [{ where: { checkedAt: { lt: Date } } }],
     ];
+    expect(query.where.checkedAt.lt.getTime()).toBeGreaterThanOrEqual(
+      startedAt - retentionMs,
+    );
     expect(query.where.checkedAt.lt.getTime()).toBeLessThanOrEqual(
-      startedAt - 14 * 24 * 60 * 60_000,
+      finishedAt - retentionMs,
     );
   });
 
   it('defaults to 30 days for an invalid retention value', async () => {
     configService.get.mockReturnValue('invalid');
     prisma.checkResult.deleteMany.mockResolvedValue({ count: 0 });
+    const retentionMs = 30 * 24 * 60 * 60_000;
     const startedAt = Date.now();
 
     await service.removeExpiredCheckResults();
+    const finishedAt = Date.now();
 
     const [[query]] = prisma.checkResult.deleteMany.mock.calls as unknown as [
       [{ where: { checkedAt: { lt: Date } } }],
     ];
+    expect(query.where.checkedAt.lt.getTime()).toBeGreaterThanOrEqual(
+      startedAt - retentionMs,
+    );
     expect(query.where.checkedAt.lt.getTime()).toBeLessThanOrEqual(
-      startedAt - 30 * 24 * 60 * 60_000,
+      finishedAt - retentionMs,
     );
   });
 
