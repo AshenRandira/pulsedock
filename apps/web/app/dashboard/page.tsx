@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { Activity, CircleAlert, Gauge, Plus, RadioTower, TimerReset } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { AppShell } from '../../components/app-shell';
 import { api } from '../../lib/api';
 
@@ -20,8 +19,6 @@ type Summary = {
   }>;
 };
 
-const chartColors = ['#168653', '#d95f4d', '#b97916'];
-
 export default function DashboardPage() {
   const [summary, setSummary] = useState<Summary>();
   const [error, setError] = useState('');
@@ -32,13 +29,8 @@ export default function DashboardPage() {
       .catch(() => setError('PulseDock API is unavailable. Start the API to see live monitoring data.'));
   }, []);
 
-  const data = summary
-    ? [
-        { name: 'Up', value: summary.monitors.up },
-        { name: 'Down', value: summary.monitors.down },
-        { name: 'Unknown', value: summary.monitors.unknown },
-      ]
-    : [];
+  const total = summary?.monitors.total ?? 0;
+  const healthyPercentage = total ? Math.round(((summary?.monitors.up ?? 0) / total) * 100) : 0;
 
   return (
     <AppShell title="Operations dashboard">
@@ -69,20 +61,7 @@ export default function DashboardPage() {
               <div><h3>Monitor state</h3><p>Current outcome across all configured endpoints.</p></div>
               <span className="surface-meta"><TimerReset size={14} /> {summary?.averageResponseTimeMs ?? '-'} ms average</span>
             </div>
-            <div className="chart">
-              {data.length ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={data} barSize={44} margin={{ top: 8, right: 10, left: -18, bottom: 0 }}>
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} />
-                    <YAxis allowDecimals={false} axisLine={false} tickLine={false} />
-                    <Tooltip cursor={{ fill: '#f0f5f2' }} />
-                    <Bar dataKey="value" radius={[5, 5, 0, 0]}>
-                      {data.map((entry, index) => <Cell key={entry.name} fill={chartColors[index]} />)}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : <div className="empty">Waiting for monitor data.</div>}
-            </div>
+            {summary ? <div className="health-panel"><div className="health-summary"><div><strong>{healthyPercentage}%</strong><span>of monitors healthy</span></div><span className={`badge ${summary.monitors.down ? 'down' : 'up'}`}>{summary.monitors.down ? 'Attention needed' : 'All clear'}</span></div><div className="health-track" aria-label={`${healthyPercentage}% of monitors are healthy`}><span className="health-up" style={{ width: `${total ? (summary.monitors.up / total) * 100 : 0}%` }} /><span className="health-down" style={{ width: `${total ? (summary.monitors.down / total) * 100 : 0}%` }} /><span className="health-unknown" style={{ width: `${total ? (summary.monitors.unknown / total) * 100 : 0}%` }} /></div><div className="health-list"><HealthRow label="Up" value={summary.monitors.up} tone="up" /><HealthRow label="Down" value={summary.monitors.down} tone="down" /><HealthRow label="Unknown" value={summary.monitors.unknown} tone="unknown" /></div></div> : <div className="skeleton-panel" aria-label="Loading monitor state"><span /><span /><span /></div>}
           </section>
 
           <section className="surface">
@@ -110,4 +89,8 @@ export default function DashboardPage() {
 
 function Metric({ label, value, foot, tone, icon }: { label: string; value: string | number; foot: string; tone?: string; icon: React.ReactNode }) {
   return <section className={`metric ${tone ?? ''}`}><div className="metric-head"><span className="label">{label}</span><span className="metric-icon">{icon}</span></div><div className="value">{value}</div><div className="metric-foot">{foot}</div></section>;
+}
+
+function HealthRow({ label, value, tone }: { label: string; value: number; tone: string }) {
+  return <div className="health-row"><span><i className={`health-dot ${tone}`} />{label}</span><strong>{value}</strong></div>;
 }
