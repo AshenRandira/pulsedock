@@ -180,6 +180,10 @@ td a:hover, td strong:hover { color: var(--teal); }
   .sidebar { grid-template-columns: 38px minmax(0, 1fr); }.nav a { padding: 8px 3px; }.nav a span { display: none; }
 }
 
+@media (max-width: 620px) {
+  .metric-grid .metric:first-child .metric-foot { display: block; margin-top: 8px; font-size: 12px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }

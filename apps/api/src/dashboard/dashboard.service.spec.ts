@@ -37,9 +37,10 @@ describe('DashboardService', () => {
   it('returns dashboard counts, average response time, and recent checks', async () => {
     prisma.monitor.count
       .mockResolvedValueOnce(4)
+      .mockResolvedValueOnce(3)
       .mockResolvedValueOnce(2)
       .mockResolvedValueOnce(1)
-      .mockResolvedValueOnce(1);
+      .mockResolvedValueOnce(0);
     prisma.incident.count.mockResolvedValue(1);
     prisma.checkResult.aggregate.mockResolvedValue({
       _avg: { responseTimeMs: 123.6 },
@@ -47,14 +48,31 @@ describe('DashboardService', () => {
     prisma.checkResult.findMany.mockResolvedValue([{ id: 'check-1' }]);
 
     await expect(service.getSummary()).resolves.toEqual({
-      monitors: { total: 4, up: 2, down: 1, unknown: 1 },
+      monitors: {
+        total: 4,
+        active: 3,
+        disabled: 1,
+        up: 2,
+        down: 1,
+        unknown: 0,
+      },
       activeIncidents: 1,
       averageResponseTimeMs: 124,
       recentChecks: [{ id: 'check-1' }],
     });
     expect(prisma.checkResult.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ take: 10 }),
+      expect.objectContaining({
+        where: { monitor: { isActive: true } },
+        take: 10,
+      }),
     );
+    expect(prisma.incident.count).toHaveBeenCalledWith({
+      where: { status: 'OPEN', monitor: { isActive: true } },
+    });
+    expect(prisma.checkResult.aggregate).toHaveBeenCalledWith({
+      where: { success: true, monitor: { isActive: true } },
+      _avg: { responseTimeMs: true },
+    });
   });
 
   it('returns bounded check history for a monitor', async () => {

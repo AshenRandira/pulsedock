@@ -7,7 +7,7 @@ import { AppShell } from '../../components/app-shell';
 import { api } from '../../lib/api';
 
 type Summary = {
-  monitors: { total: number; up: number; down: number; unknown: number };
+  monitors: { total: number; active: number; disabled: number; up: number; down: number; unknown: number };
   activeIncidents: number;
   averageResponseTimeMs: number | null;
   recentChecks: Array<{
@@ -29,8 +29,8 @@ export default function DashboardPage() {
       .catch(() => setError('PulseDock API is unavailable. Start the API to see live monitoring data.'));
   }, []);
 
-  const total = summary?.monitors.total ?? 0;
-  const healthyPercentage = total ? Math.round(((summary?.monitors.up ?? 0) / total) * 100) : 0;
+  const active = summary?.monitors.active ?? 0;
+  const healthyPercentage = active ? Math.round(((summary?.monitors.up ?? 0) / active) * 100) : 0;
 
   return (
     <AppShell title="Operations dashboard">
@@ -49,7 +49,7 @@ export default function DashboardPage() {
         {error && <div className="notice">{error}</div>}
 
         <div className="metric-grid">
-          <Metric label="All monitors" value={summary?.monitors.total ?? '-'} foot="Configured endpoints" icon={<RadioTower size={18} />} />
+          <Metric label="All monitors" value={summary?.monitors.total ?? '-'} foot={summary ? `${summary.monitors.active} active, ${summary.monitors.disabled} disabled` : 'Configured endpoints'} icon={<RadioTower size={18} />} />
           <Metric label="Healthy" value={summary?.monitors.up ?? '-'} foot="Responding as expected" tone="up" icon={<Activity size={18} />} />
           <Metric label="Down" value={summary?.monitors.down ?? '-'} foot="Needs attention" tone="down" icon={<CircleAlert size={18} />} />
           <Metric label="Open incidents" value={summary?.activeIncidents ?? '-'} foot="Unresolved downtime" tone={summary?.activeIncidents ? 'down' : 'up'} icon={<Gauge size={18} />} />
@@ -58,10 +58,10 @@ export default function DashboardPage() {
         <div className="two-col">
           <section className="surface">
             <div className="surface-head">
-              <div><h3>Monitor state</h3><p>Current outcome across all configured endpoints.</p></div>
+              <div><h3>Monitor state</h3><p>Current outcome across active endpoints.</p></div>
               <span className="surface-meta"><TimerReset size={14} /> {summary?.averageResponseTimeMs ?? '-'} ms average</span>
             </div>
-            {summary ? <div className="health-panel"><div className="health-summary"><div><strong>{healthyPercentage}%</strong><span>of monitors healthy</span></div><span className={`badge ${summary.monitors.down ? 'down' : 'up'}`}>{summary.monitors.down ? 'Attention needed' : 'All clear'}</span></div><div className="health-track" aria-label={`${healthyPercentage}% of monitors are healthy`}><span className="health-up" style={{ width: `${total ? (summary.monitors.up / total) * 100 : 0}%` }} /><span className="health-down" style={{ width: `${total ? (summary.monitors.down / total) * 100 : 0}%` }} /><span className="health-unknown" style={{ width: `${total ? (summary.monitors.unknown / total) * 100 : 0}%` }} /></div><div className="health-list"><HealthRow label="Up" value={summary.monitors.up} tone="up" /><HealthRow label="Down" value={summary.monitors.down} tone="down" /><HealthRow label="Unknown" value={summary.monitors.unknown} tone="unknown" /></div></div> : <div className="skeleton-panel" aria-label="Loading monitor state"><span /><span /><span /></div>}
+            {summary ? <div className="health-panel"><div className="health-summary"><div><strong>{healthyPercentage}%</strong><span>of active monitors healthy</span></div><span className={`badge ${summary.monitors.down ? 'down' : 'up'}`}>{summary.monitors.down ? 'Attention needed' : 'All clear'}</span></div><div className="health-track" aria-label={`${healthyPercentage}% of active monitors are healthy`}><span className="health-up" style={{ width: `${active ? (summary.monitors.up / active) * 100 : 0}%` }} /><span className="health-down" style={{ width: `${active ? (summary.monitors.down / active) * 100 : 0}%` }} /><span className="health-unknown" style={{ width: `${active ? (summary.monitors.unknown / active) * 100 : 0}%` }} /></div><div className="health-list"><HealthRow label="Up" value={summary.monitors.up} tone="up" /><HealthRow label="Down" value={summary.monitors.down} tone="down" /><HealthRow label="Unknown" value={summary.monitors.unknown} tone="unknown" /></div></div> : <div className="skeleton-panel" aria-label="Loading monitor state"><span /><span /><span /></div>}
           </section>
 
           <section className="surface">

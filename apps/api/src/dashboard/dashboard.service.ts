@@ -12,6 +12,7 @@ export class DashboardService {
   async getSummary() {
     const [
       totalMonitors,
+      activeMonitors,
       upMonitors,
       downMonitors,
       unknownMonitors,
@@ -20,15 +21,25 @@ export class DashboardService {
       recentChecks,
     ] = await Promise.all([
       this.prisma.monitor.count(),
-      this.prisma.monitor.count({ where: { currentStatus: 'UP' } }),
-      this.prisma.monitor.count({ where: { currentStatus: 'DOWN' } }),
-      this.prisma.monitor.count({ where: { currentStatus: 'UNKNOWN' } }),
-      this.prisma.incident.count({ where: { status: 'OPEN' } }),
+      this.prisma.monitor.count({ where: { isActive: true } }),
+      this.prisma.monitor.count({
+        where: { isActive: true, currentStatus: 'UP' },
+      }),
+      this.prisma.monitor.count({
+        where: { isActive: true, currentStatus: 'DOWN' },
+      }),
+      this.prisma.monitor.count({
+        where: { isActive: true, currentStatus: 'UNKNOWN' },
+      }),
+      this.prisma.incident.count({
+        where: { status: 'OPEN', monitor: { isActive: true } },
+      }),
       this.prisma.checkResult.aggregate({
-        where: { success: true },
+        where: { success: true, monitor: { isActive: true } },
         _avg: { responseTimeMs: true },
       }),
       this.prisma.checkResult.findMany({
+        where: { monitor: { isActive: true } },
         take: 10,
         orderBy: { checkedAt: 'desc' },
         include: {
@@ -42,6 +53,8 @@ export class DashboardService {
     return {
       monitors: {
         total: totalMonitors,
+        active: activeMonitors,
+        disabled: totalMonitors - activeMonitors,
         up: upMonitors,
         down: downMonitors,
         unknown: unknownMonitors,
