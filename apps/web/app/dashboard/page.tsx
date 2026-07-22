@@ -2,8 +2,10 @@
 
 import Link from 'next/link';
 import { Activity, CircleAlert, Gauge, Plus, RadioTower, TimerReset } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { AppShell } from '../../components/app-shell';
+import { LiveRefreshControl } from '../../components/live-refresh-control';
+import { useLiveRefresh } from '../../hooks/use-live-refresh';
 import { api } from '../../lib/api';
 
 type Summary = {
@@ -23,11 +25,16 @@ export default function DashboardPage() {
   const [summary, setSummary] = useState<Summary>();
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    api<Summary>('/dashboard/summary')
-      .then(setSummary)
-      .catch(() => setError('PulseDock API is unavailable. Start the API to see live monitoring data.'));
+  const load = useCallback(async () => {
+    try {
+      setSummary(await api<Summary>('/dashboard/summary'));
+      setError('');
+    } catch (loadError) {
+      setError('PulseDock API is unavailable. Start the API to see live monitoring data.');
+      throw loadError;
+    }
   }, []);
+  const liveRefresh = useLiveRefresh(load);
 
   const active = summary?.monitors.active ?? 0;
   const healthyPercentage = active ? Math.round(((summary?.monitors.up ?? 0) / active) * 100) : 0;
@@ -42,6 +49,7 @@ export default function DashboardPage() {
             <p>Current monitor health, active incidents, and the latest check activity.</p>
           </div>
           <div className="page-title-actions">
+            <LiveRefreshControl {...liveRefresh} onRefresh={liveRefresh.refresh} />
             <Link className="button" href="/monitors/new"><Plus size={16} /> Add monitor</Link>
           </div>
         </div>

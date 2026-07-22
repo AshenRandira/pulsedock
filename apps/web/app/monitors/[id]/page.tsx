@@ -1,20 +1,21 @@
 'use client';
 
 import Link from 'next/link';
-import { FormEvent, useCallback, useEffect, useState } from 'react';
+import { FormEvent, useCallback, useState } from 'react';
 import {
   ArrowLeft,
   ExternalLink,
   Pencil,
   Play,
   Power,
-  RefreshCw,
   Save,
   X,
 } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { AppShell } from '../../../components/app-shell';
+import { LiveRefreshControl } from '../../../components/live-refresh-control';
 import { StatusBadge } from '../../../components/status-badge';
+import { useLiveRefresh } from '../../../hooks/use-live-refresh';
 import { api } from '../../../lib/api';
 
 type Monitor = {
@@ -58,7 +59,9 @@ export default function MonitorDetailPage() {
       setError('Unable to load this monitor.');
     }), [id]);
 
-  useEffect(() => { void load(); }, [load]);
+  const liveRefresh = useLiveRefresh(load, {
+    enabled: !editing && !saving && !checking && !changingActive,
+  });
 
   async function check() {
     setChecking(true);
@@ -185,7 +188,7 @@ export default function MonitorDetailPage() {
 
         <div className="two-col">
           <section className="surface">
-            <div className="surface-head"><div><h3>Check history</h3><p>Latest availability results.</p></div><button className="button secondary" onClick={() => void load()}><RefreshCw size={15} /> Refresh</button></div>
+            <div className="surface-head"><div><h3>Check history</h3><p>Latest availability results.</p></div><LiveRefreshControl {...liveRefresh} onRefresh={liveRefresh.refresh} /></div>
             <div className="table-wrap"><table><thead><tr><th>Time</th><th>Result</th><th>HTTP</th><th>Response</th></tr></thead><tbody>{checks.length ? checks.map((checkResult) => <tr key={checkResult.id}><td>{new Date(checkResult.checkedAt).toLocaleString()}</td><td><StatusBadge status={checkResult.success ? 'UP' : 'DOWN'} /></td><td>{checkResult.statusCode ?? '-'}</td><td>{checkResult.responseTimeMs ?? '-'} ms</td></tr>) : <tr><td colSpan={4} className="empty">No checks recorded yet.</td></tr>}</tbody></table></div>
           </section>
           <section className="surface">
