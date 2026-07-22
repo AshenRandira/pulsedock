@@ -15,7 +15,11 @@ export class UpdateMonitorDto {
   name?: string;
 
   @IsOptional()
-  @IsUrl({ protocols: ['http', 'https'], require_protocol: true })
+  @IsUrl({
+    protocols: ['http', 'https'],
+    require_protocol: true,
+    require_tld: false,
+  })
   url?: string;
 
   @IsOptional()

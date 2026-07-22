@@ -121,6 +121,32 @@ describe('AppController (e2e)', () => {
       });
   });
 
+  it('/monitors (POST) accepts a localhost monitor URL', () => {
+    const monitor = {
+      id: 'monitor-local',
+      name: 'PulseDock API',
+      url: 'http://localhost:4000/health',
+    };
+    monitorsService.create.mockResolvedValue(monitor);
+
+    return request(app.getHttpServer())
+      .post('/monitors')
+      .send({
+        name: 'PulseDock API',
+        url: 'http://localhost:4000/health',
+        intervalMinutes: 5,
+      })
+      .expect(201)
+      .expect(monitor)
+      .expect(() => {
+        expect(monitorsService.create).toHaveBeenCalledWith({
+          name: 'PulseDock API',
+          url: 'http://localhost:4000/health',
+          intervalMinutes: 5,
+        });
+      });
+  });
+
   it('/monitors (POST) rejects an invalid monitor', () => {
     return request(app.getHttpServer())
       .post('/monitors')
