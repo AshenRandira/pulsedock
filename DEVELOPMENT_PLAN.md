@@ -18,8 +18,9 @@ This plan keeps development backend-first. Each phase should happen on its own b
   create an incident and a successful recovery check resolves it.
 - Live dashboard, monitor, incident, detail, and public status data refreshes
   automatically while the browser tab is visible.
-- The final non-Docker readiness audit is complete. Docker deployment is next as
-  Phase 11.
+- Phase 11 adds production API/web images and a health-gated Docker Compose stack
+  with PostgreSQL, automatic migrations, and persistent database storage.
+- All 11 Version 1 phases are implemented and validated.
 - Version 1 intentionally has no built-in authentication or SaaS features.
 
 ## Development Rules
@@ -624,6 +625,10 @@ docker compose up
 
 starts the full app.
 
+Status: Complete. The full stack has been built and validated with PostgreSQL,
+automatic production migrations, API and web health checks, persistent storage,
+and an end-to-end monitor check.
+
 Suggested commit:
 
 ```bash
@@ -646,6 +651,7 @@ git commit -m "chore: add docker compose deployment"
 
 ## Immediate Next Step
 
-The core Version 1 application, local verification, and pre-Docker readiness
-work are complete. Continue with Phase 11 on `chore/docker-compose` without
-expanding into SaaS or built-in authentication features.
+Version 1 implementation is complete. Future work should begin with deployment
+hardening and user feedback while preserving the current self-hosted scope. Do
+not expose PulseDock publicly without an external authentication layer or
+private network protection.

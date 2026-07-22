@@ -47,6 +47,13 @@ npm run prisma:generate
 npm run prisma:migrate
 ```
 
+Production and Docker deployments apply existing migrations without creating
+new ones:
+
+```bash
+npm run prisma:deploy
+```
+
 ## Endpoints
 
 ```text
