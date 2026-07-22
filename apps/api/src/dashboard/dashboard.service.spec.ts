@@ -106,17 +106,24 @@ describe('DashboardService', () => {
     });
 
     const [[monitorQuery]] = prisma.monitor.findMany.mock.calls as unknown as [
-      [{ where: { isPublic: boolean } }],
+      [{ where: { isPublic: boolean; isActive: boolean } }],
     ];
     const [[incidentQuery]] = prisma.incident.findMany.mock
       .calls as unknown as [
-      [{ where: { status: string; monitor: { isPublic: boolean } } }],
+      [
+        {
+          where: {
+            status: string;
+            monitor: { isPublic: boolean; isActive: boolean };
+          };
+        },
+      ],
     ];
 
-    expect(monitorQuery.where.isPublic).toBe(true);
+    expect(monitorQuery.where).toEqual({ isPublic: true, isActive: true });
     expect(incidentQuery.where).toEqual({
       status: 'OPEN',
-      monitor: { isPublic: true },
+      monitor: { isPublic: true, isActive: true },
     });
     expect(prisma.checkResult.groupBy).toHaveBeenCalledWith(
       expect.objectContaining({

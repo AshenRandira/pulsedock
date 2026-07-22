@@ -91,7 +91,7 @@ export class DashboardService {
     const [settings, monitors, incidents] = await Promise.all([
       this.prisma.appSetting.findFirst({ orderBy: { createdAt: 'asc' } }),
       this.prisma.monitor.findMany({
-        where: { isPublic: true },
+        where: { isPublic: true, isActive: true },
         orderBy: { name: 'asc' },
         select: {
           id: true,
@@ -102,7 +102,10 @@ export class DashboardService {
         },
       }),
       this.prisma.incident.findMany({
-        where: { status: 'OPEN', monitor: { isPublic: true } },
+        where: {
+          status: 'OPEN',
+          monitor: { isPublic: true, isActive: true },
+        },
         orderBy: { startedAt: 'desc' },
         include: {
           monitor: {
