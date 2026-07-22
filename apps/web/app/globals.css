@@ -80,6 +80,7 @@ button:disabled { cursor: not-allowed; opacity: 0.62; }
 .topbar p { margin: 0; color: var(--muted); font-size: 12px; }
 .connection { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
 .connection-chip { border: 1px solid #cee5d7; border-radius: 999px; background: #f0faf4; color: #256d45; padding: 7px 10px; font-weight: 650; }
+.connection-chip.offline { border-color: #f0c3bc; background: #fff7f5; color: #a23f32; }.connection-chip.offline .dot { background: var(--coral); box-shadow: 0 0 0 3px rgba(217, 95, 77, 0.12); }.connection-chip.checking { border-color: #e8d9ad; background: #fffaf0; color: #90610c; }.connection-chip.checking .dot { background: var(--gold); box-shadow: none; }
 .dot { width: 7px; height: 7px; border-radius: 50%; background: #29a969; box-shadow: 0 0 0 3px rgba(41, 169, 105, 0.12); }
 
 .page { max-width: 1500px; margin: 0 auto; padding: 32px; }
